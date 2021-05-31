@@ -26,16 +26,12 @@ export const pre = async (event: ICodeDeploymentEvent, context, callback): Promi
     const lambdaResults = await lambda.invoke(invokeRequest).promise();
 
     // Some fake validation check things here.
-    console.log('The status code is ...', lambdaResults.StatusCode);
-
-    if (lambdaResults.StatusCode !== 200) {
+    const jsonResponse = JSON.parse(lambdaResults.Payload?.toString());
+    if (jsonResponse?.statusCode !== 200) {
         status = 'Failed';
     } else {
-        console.log('The payload type is ...', typeof lambdaResults.Payload);
-        console.log('The payload is ...', lambdaResults.Payload)
-        const jsonPayload = JSON.parse(lambdaResults.Payload?.toString());
-        console.log('The payload JSON payload is ...', jsonPayload);
-        const jsonBody = JSON.parse(jsonPayload?.body);
+        console.log('The payload JSON payload is ...', jsonResponse);
+        const jsonBody = JSON.parse(jsonResponse?.body);
         console.log('The json body is ...', jsonBody);
         const version = jsonBody?.version;
         console.log('The version from the body is ...', jsonBody?.version);
@@ -44,9 +40,6 @@ export const pre = async (event: ICodeDeploymentEvent, context, callback): Promi
             status = 'Failed';
         }
     }
-
-
-
 
     const params: PutLifecycleEventHookExecutionStatusInput = {
         deploymentId: deploymentId,

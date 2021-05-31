@@ -1,9 +1,8 @@
 import { APIGatewayProxyHandler } from "aws-lambda"
-import { version } from './constants';
+import { statusCodes, version } from './constants';
 
 export const hello: APIGatewayProxyHandler = async (event) => {
-    const possibleCodes = [500];
-    const randomCode = possibleCodes[Math.floor(Math.random() * possibleCodes.length)];
+    const randomCode = statusCodes[Math.floor(Math.random() * statusCodes.length)];
 
     return {
         statusCode: randomCode,
