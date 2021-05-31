@@ -1,0 +1,45 @@
+service: serverless-blue-green
+frameworkVersion: '2'
+provider:
+  name: aws
+  memorySize: 128
+  runtime: nodejs14.x
+  region: us-east-1
+  lambdaHashingVersion: 20201221
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - codedeploy:*
+      Resource:
+      - "*"
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource:
+      - "*"
+plugins:
+  - serverless-plugin-typescript
+  - serverless-plugin-canary-deployments
+  - serverless-pseudo-parameters  
+functions:
+
+  hello:
+    handler: handler.hello          
+    events:
+      - http:
+          path: hello
+          method: get 
+    deploymentSettings:
+      type: AllAtOnce
+      alias: Live
+      preTrafficHook: preHook
+      postTrafficHook: postHook
+
+  preHook:
+    handler: hooks.pre
+    environment:
+      HELLOFN: arn:aws:lambda:${self:provider.region}:#{AWS::AccountId}:function:${self:service.name}-${self:provider.stage}-hello
+
+  postHook:
+    handler: hooks.post
